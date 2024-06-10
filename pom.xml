@@ -90,6 +90,12 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version> <!-- kiểm tra phiên bản mới nhất trên trang chủ của Lombok -->
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 

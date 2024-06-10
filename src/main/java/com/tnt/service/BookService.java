@@ -1,9 +1,10 @@
-package com.mkyong.service;
+package com.tnt.service;
 
-import com.mkyong.model.Book;
-import com.mkyong.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.tnt.model.Book;
+import com.tnt.repository.BookRepository;
 
 import java.time.LocalDate;
 import java.util.List;

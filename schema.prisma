@@ -1,0 +1,481 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                         Int      @id @default(autoincrement())
+  uuid                       String   @unique @default(uuid())
+  name                       String
+  taxCode                    String
+  businessRegistrationNumber String
+  businessNationality        String?
+  businessIndustry           String
+  phoneNumber                String
+  email                      String
+  addressDetail              String?
+  district                   String
+  city                       String
+  country                    String
+  domain                     String   @unique
+  createdDate                DateTime
+  tenantId                   String
+}
+
+///////////////////////
+
+model Account {
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  username      String         @unique
+  password      String
+  refreshToken  String?
+  accessToken   String?
+  type          TypeAccount
+  tenantId      String?
+  permissions   Permission[]
+  notifications Notification[]
+  customer      Customer?      @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID  String?        @unique
+  employee      Employee?      @relation(fields: [employeeUUID], references: [uuid], onDelete: Cascade)
+  employeeUUID  String?        @unique
+  chat_sender   Chat[]         @relation("Sender")
+  chat_receiver Chat[]         @relation("Receiver")
+}
+
+model Permission {
+  id             Int       @id @default(autoincrement())
+  uuid           String    @unique @default(uuid())
+  namePermission String
+  description    String?
+  accounts       Account[]
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  type        String?
+  title       String
+  content     String
+  time        DateTime
+  account     Account? @relation(fields: [accountUUID], references: [uuid])
+  accountUUID String?
+  tenantId    String?
+}
+
+///////////////////////
+
+model Customer {
+  id                 Int                   @id @default(autoincrement())
+  uuid               String                @unique @default(uuid())
+  name               String
+  code               String?
+  isBusiness         Boolean
+  source             Int?
+  city               String?
+  district           String?
+  detailAddress      String?
+  description        String?
+  receiveMail        Boolean
+  createdDate        DateTime
+  hasAccount         StatusCustomerAccount
+  business           Business?
+  individual         Individual?
+  tenantId           String?
+  tasks              Task[]
+  priceQuoteRequests PriceQuoteRequest[]
+  priceQuotes        PriceQuote[]
+  bills              Bill[]
+  complaints         Complaint[]
+  account            Account?
+  employees          Employee[]
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @default(now()) @updatedAt
+  emailTask          EmailTask[]
+  phasesCustomer     PhasesCustomer[]
+  phase              Phase?                @relation(fields: [phaseUUID], references: [uuid])
+  phaseUUID          String?
+}
+
+model PhasesCustomer {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  date         DateTime
+  phaseUUID    String
+  customer     Customer @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID String
+}
+
+model Business {
+  id                        Int       @id @unique @default(autoincrement())
+  businessNationality       String?
+  registrationNumber        String?
+  taxCode                   String?
+  industry                  String?
+  representativeName        String?
+  representativeDayOfBirth  DateTime?
+  representativeCccd        String?
+  representativePosition    String?
+  representativeGender      Gender?
+  representativePhone       String?
+  representativeEmail       String?
+  representativeNationality String?
+  customer                  Customer  @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID              String    @unique
+}
+
+model Individual {
+  id           Int       @id @default(autoincrement())
+  dayOfBirth   DateTime?
+  cccd         String?
+  gender       Gender?
+  email        String?
+  phoneNumber  String?
+  nationality  String?
+  customer     Customer  @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID String    @unique
+}
+
+///////////////////////
+
+model Phase {
+  id          Int        @id @default(autoincrement())
+  uuid        String     @unique @default(uuid())
+  name        String
+  priority    Int
+  description String?
+  tenantId    String?
+  customers   Customer[]
+  activities  Activity[]
+}
+
+model PriceQuoteRequest {
+  id           Int                        @id @default(autoincrement())
+  uuid         String                     @unique @default(uuid())
+  code         String?
+  createdDate  DateTime
+  status       StatusPriceQuoteRequest
+  sentDate     DateTime?
+  products     ProductPriceQuoteRequest[]
+  customer     Customer?                  @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID String?
+  quote        PriceQuote[]
+  tenantId     String?
+}
+
+model PriceQuote {
+  id                    Int                 @id @default(autoincrement())
+  uuid                  String              @unique @default(uuid())
+  code                  String?
+  createdDate           DateTime
+  effectiveDate         DateTime
+  createdBy             Employee            @relation(fields: [employeeUUID], references: [uuid])
+  employeeUUID          String
+  status                StatusPriceQuote
+  sentDate              DateTime?
+  products              ProductPriceQuote[]
+  customer              Customer?           @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  priceQuoteRequest     PriceQuoteRequest?  @relation(fields: [priceQuoteRequestUUID], references: [uuid], onDelete: NoAction)
+  priceQuoteRequestUUID String?
+  customerUUID          String?
+  tenantId              String?
+  bill                  Bill[]
+}
+
+model Bill {
+  id             Int           @id @default(autoincrement())
+  uuid           String        @unique @default(uuid())
+  code           String?
+  status         StatusBill
+  createdDate    DateTime
+  products       ProductBill[]
+  customer       Customer?     @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID   String?
+  priceQuote     PriceQuote?   @relation(fields: [priceQuoteUUID], references: [uuid], onDelete: NoAction)
+  priceQuoteUUID String?
+  complaints     Complaint[]
+  tenantId       String?
+}
+
+// Các Model đặc biệt
+model ProductPriceQuoteRequest {
+  id                    Int               @id @default(autoincrement())
+  quantity              Int
+  priceQuoteRequest     PriceQuoteRequest @relation(fields: [priceQuoteRequestUUID], references: [uuid], onDelete: Cascade)
+  priceQuoteRequestUUID String
+  product               Product           @relation(fields: [productUUID], references: [uuid], onDelete: NoAction)
+  productUUID           String
+}
+
+model ProductPriceQuote {
+  id              Int        @id @default(autoincrement())
+  negotiatedPrice Int
+  quantity        Int
+  priceQuote      PriceQuote @relation(fields: [priceQuoteUUID], references: [uuid], onDelete: Cascade)
+  priceQuoteUUID  String
+  product         Product    @relation(fields: [productUUID], references: [uuid], onDelete: NoAction)
+  productUUID     String
+}
+
+model ProductBill {
+  id          Int     @id @default(autoincrement())
+  fixedPrice  Int
+  quantity    Int
+  bill        Bill    @relation(fields: [billUUID], references: [uuid], onDelete: Cascade)
+  billUUID    String
+  product     Product @relation(fields: [productUUID], references: [uuid], onDelete: NoAction)
+  productUUID String
+}
+
+///////////////////////
+
+model Employee {
+  id                Int                 @id @default(autoincrement())
+  uuid              String              @unique @default(uuid())
+  name              String
+  code              String?
+  city              String?
+  district          String?
+  detailAddress     String?
+  dayOfBirth        DateTime?
+  cccd              String?
+  email             String
+  phoneNumber       String?
+  description       String?
+  gender            Gender?
+  position          String?
+  avatar            Bytes?
+  nationality       String?
+  tasks             Task[]
+  complaints        Complaint[]
+  account           Account?
+  tenantId          String?
+  customers         Customer[]
+  activityComplaint ActivityComplaint[]
+  emailTask         EmailTask[]
+  priceQuote        PriceQuote[]
+}
+
+///////////////////////
+
+model Activity {
+  id                Int                 @id @default(autoincrement())
+  uuid              String              @unique @default(uuid())
+  name              String
+  description       String?
+  tasks             Task[]
+  phases            Phase[]
+  tenantId          String?
+  activityComplaint ActivityComplaint[]
+}
+
+model Task {
+  id              Int         @id @default(autoincrement())
+  uuid            String      @unique @default(uuid())
+  title           String
+  startDate       DateTime
+  endDate         DateTime
+  createDate      DateTime
+  doneDate        DateTime?
+  status          StatusTask
+  note            String?
+  autoAnnounceCus Boolean
+  autoAnnounceEmp Boolean
+  tenantId        String?
+  customer        Customer    @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID    String
+  employees       Employee[]
+  activity        Activity?   @relation(fields: [activityUUID], references: [uuid], onDelete: NoAction)
+  activityUUID    String?
+  emailTask       EmailTask[]
+}
+
+model EmailTask {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  sentDate     DateTime
+  subject      String?
+  content      String
+  from         Employee @relation(fields: [employeeUUID], references: [uuid], onDelete: NoAction)
+  employeeUUID String
+  recipient    Customer @relation(fields: [customerUUID], references: [uuid], onDelete: NoAction)
+  customerUUID String
+  task         Task     @relation(fields: [taskUUID], references: [uuid])
+  taskUUID     String
+  tenantId     String
+}
+
+///////////////////////
+model TypeComplaint {
+  id          Int              @id @default(autoincrement())
+  uuid        String           @unique @default(uuid())
+  name        String
+  description String?
+  listOfField FieldComplaint[]
+  complaints  Complaint[]
+  tenantId    String?
+}
+
+model Complaint {
+  id                  Int                      @id @default(autoincrement())
+  uuid                String                   @unique @default(uuid())
+  code                String
+  listStatus          HistoryStatusComplaint[]
+  employees           Employee[]
+  createdDate         DateTime
+  sentDate            DateTime
+  customer            Customer?                @relation(fields: [customerUUID], references: [uuid], onDelete: Cascade)
+  customerUUID        String?
+  typeComplaint       TypeComplaint?           @relation(fields: [typeComplaintUUID], references: [uuid], onDelete: NoAction)
+  typeComplaintUUID   String?
+  bill                Bill?                    @relation(fields: [billUUID], references: [uuid], onDelete: NoAction)
+  billUUID            String?
+  tenantId            String?
+  valueFieldComplaint ValueFieldComplaint[]
+  activityComplaint   ActivityComplaint[]
+}
+
+model HistoryStatusComplaint {
+  id            Int             @id @default(autoincrement())
+  date          DateTime
+  status        StatusComplaint
+  complaint     Complaint?      @relation(fields: [complaintUUID], references: [uuid])
+  complaintUUID String?
+}
+
+model ActivityComplaint {
+  id            Int       @id @default(autoincrement())
+  uuid          String    @unique @default(uuid())
+  note          String
+  doneDate      DateTime
+  employee      Employee  @relation(fields: [employeeUUID], references: [uuid])
+  employeeUUID  String
+  activity      Activity  @relation(fields: [activityUUID], references: [uuid])
+  activityUUID  String
+  complaint     Complaint @relation(fields: [complaintUUID], references: [uuid])
+  complaintUUID String
+  tenantId      String
+}
+
+///////////////////////
+
+model Product {
+  id                        Int                        @id @default(autoincrement())
+  uuid                      String                     @unique @default(uuid())
+  name                      String
+  code                      String?
+  features                  String?
+  quantity                  Int
+  description               String?
+  price                     Int
+  unit                      String?
+  tenantId                  String?
+  images                    ImageProduct[]
+  productPriceQuotes        ProductPriceQuote[]
+  productPriceQuoteRequests ProductPriceQuoteRequest[]
+  productBills              ProductBill[]
+}
+
+model ImageProduct {
+  id          Int     @id @default(autoincrement())
+  uuid        String  @unique @default(uuid())
+  url         String
+  productUUID String
+  product     Product @relation(fields: [productUUID], references: [uuid])
+}
+
+// Các Model sử dụng chung
+// model Address {
+//   id            Int     @id @default(autoincrement())
+//   tenant        Tenant? @relation(fields: [tenantUUID], references: [uuid])
+//   tenantUUID    String? @unique
+// }
+
+model FieldComplaint {
+  id                Int            @id @default(autoincrement())
+  uuid              String         @unique @default(uuid())
+  name              String
+  isFieldFile       Boolean
+  title             String
+  specificFileTypes String[] // File
+  maxNumOfFiles     Int? // File
+  listOptions       String[] // Other
+  typeComplaint     TypeComplaint? @relation(fields: [typeComplaintUUID], references: [uuid], onDelete: Cascade)
+  typeComplaintUUID String?
+}
+
+model ValueFieldComplaint {
+  id                 Int        @id @default(autoincrement())
+  fieldComplaintUUID String?
+  value              String[]
+  complaint          Complaint? @relation(fields: [complaintUUID], references: [uuid])
+  complaintUUID      String?
+  tenantId           String?
+}
+
+/////////////////////////    chat
+model Chat {
+  id           Int      @id @default(autoincrement())
+  content      String
+  senderUUID   String
+  receiverUUID String
+  sender       Account  @relation("Sender", fields: [senderUUID], references: [uuid])
+  receiver     Account  @relation("Receiver", fields: [receiverUUID], references: [uuid])
+  createdAt    DateTime @default(now())
+}
+
+// Enum
+enum Gender {
+  MALE    @map("Male")
+  FEMALE  @map("Female")
+  UNKNOWN @map("Unknown")
+}
+
+enum TypeAccount {
+  ADMIN    @map("0")
+  EMPLOYEE @map("1")
+  CUSTOMER @map("2")
+}
+
+enum StatusPriceQuoteRequest {
+  SENT   @map("Đã gửi")
+  UNSENT @map("Chưa gửi")
+}
+
+enum StatusPriceQuote {
+  SENT     @map("Đã gửi")
+  UNSENT   @map("Chưa gửi")
+  CANCELED @map("Đã hủy")
+}
+
+enum StatusBill {
+  PAID   @map("Đã thanh toán")
+  UNPAID @map("Chưa thanh toán")
+}
+
+enum StatusTask {
+  INPROGRESS @map("Đang diễn ra")
+  OVERDUE    @map("Đã trễ")
+  COMPLETED  @map("Hoàn thành")
+}
+
+enum StatusComplaint {
+  PENDING    @map("Chưa xử lý")
+  PROCESSING @map("Đang xử lý")
+  SOLVED     @map("Đã xử lý")
+  SATISFIED  @map("Hài lòng")
+  REPROCESS  @map("Xử lý lại")
+}
+
+enum StatusCustomerAccount {
+  NOTAPPROVED @map("NOTAPPROVED")
+  PENDING     @map("PENDING")
+  APPROVED    @map("APPROVED")
+}

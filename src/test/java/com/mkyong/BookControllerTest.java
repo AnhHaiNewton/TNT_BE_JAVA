@@ -1,7 +1,5 @@
 package com.mkyong;
 
-import com.mkyong.model.Book;
-import com.mkyong.repository.BookRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -15,6 +13,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import com.tnt.model.Book;
+import com.tnt.repository.BookRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

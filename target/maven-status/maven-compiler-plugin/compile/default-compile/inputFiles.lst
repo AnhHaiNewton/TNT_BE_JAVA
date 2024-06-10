@@ -1,6 +1,9 @@
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\service\BookService.java
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\model\Account.java
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\controller\BookController.java
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\model\Book.java
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\repository\BookRepository.java
-D:\Java\spring-boot\spring-data-jpa-postgresql\src\main\java\com\mkyong\MainApplication.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\service\TenantService.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\model\Tenant.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\MainApplication.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\controller\TenantController.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\repository\TenantRepository.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\service\BookService.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\controller\BookController.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\repository\BookRepository.java
+D:\Java\TNT_BE\TNT_BE_JAVA\src\main\java\com\tnt\model\Book.java
